@@ -7,7 +7,7 @@ class LLMConfig(PretrainedConfig):
                  dim: int=512,
                  n_layers: int=8,
                  n_heads: int=8,
-                 n_kv_heads: int=8,
+                 n_kv_heads: int=2,
                  vocab_size: int=6400,
                  hidden_dim: int=None,  #这里设置为None是因为要根据具体传入的dim来计算hidden_dim，具体是8/3倍的dim，用于FFN中的升维
                  multiple_of: int=64,
