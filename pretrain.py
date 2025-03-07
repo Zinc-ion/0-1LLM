@@ -12,8 +12,16 @@ from Config import LLMConfig
 from dataset import PretrainDataset
 
 # 获取学习率，根据当前步数和总步数动态调整
-def get_lr(current_step, total_steps, lr):
-    return lr / 10 + 0.5 * lr * (1 + math.cos(math.pi * current_step / total_steps))
+def get_lr(current_step, total_steps, lr, warmup_iters=0):
+     if warmup_iters > 0 and current_step < warmup_iters:
+          # warmup阶段：从 lr/10 线性上升到 1.1*lr
+          warmup_lr = lr / 10 + lr * (current_step / warmup_iters)
+          return warmup_lr
+     else:
+          # cosine退火阶段：调整步数减去warmup_iters
+          adjusted_step = current_step - warmup_iters
+          adjusted_total = total_steps - warmup_iters
+          return lr / 10 + 0.5 * lr * (1 + math.cos(math.pi * adjusted_step / adjusted_total))
     # 最初current_step=0 返回的是1.1*lr，最后current_step=total_steps返回的是0.1*lr，实现学习率的cosine——decay
 
 
@@ -31,7 +39,8 @@ def train_epoch(epoch, wandb):
           loss_mask = loss_mask.to(args.device)  # 将损失mask数据移动到设备上
 
           # 计算当前学习率
-          lr = get_lr(epoch * iter_per_epoch + step, args.epochs * iter_per_epoch, args.learning_rate)
+          lr = get_lr(epoch * iter_per_epoch + step, args.epochs * iter_per_epoch,
+                      args.learning_rate, args.warmup_iters)
           # 更新优化器的学习率
           for param_group in optimizer.param_groups:
                param_group['lr'] = lr
