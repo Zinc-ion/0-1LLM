@@ -50,6 +50,7 @@ def train_epoch(epoch, wandb):
                res = model(X)  # 模型的前向传播
                loss = loss_fct(
                     res.logits.view(-1, res.logits.size(-1)),  # 计算损失
+                    # view(-1, res.logits.size(-1))将logits展平，即将二维张量展平为一维张量，
                     # .logits表示
                     Y.view(-1)
                ).view(Y.size())
